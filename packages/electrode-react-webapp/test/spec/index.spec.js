@@ -24,7 +24,7 @@ describe("Test electrode-react-webapp", () => {
                 content: {
                   status: 200,
                   html: "<div>Hello Electrode</div>",
-                  prefetch: "console.log('Hello');"
+                  prefetch: '<link rel="dns-prefetch" href="https://cdn.com" />'
                 }
               }
             }
@@ -58,7 +58,7 @@ describe("Test electrode-react-webapp", () => {
           expect(res.statusCode).to.equal(200);
           expect(res.result).to.contain("<title>Electrode App</title>");
           expect(res.result).to.contain("<div>Hello Electrode</div>");
-          expect(res.result).to.contain("<script>console.log('Hello');</script>");
+          expect(res.result).to.contain('<link rel="dns-prefetch" href="https://cdn.com" />');
           stopServer(server);
         })
         .catch(err => {
@@ -74,7 +74,7 @@ describe("Test electrode-react-webapp", () => {
         Promise.resolve({
           status: 200,
           html: "<div>Hello Electrode</div>",
-          prefetch: "console.log('Hello');"
+          prefetch: '<link rel="dns-prefetch" href="https://cdn.com" />'
         })
     });
 
@@ -88,7 +88,7 @@ describe("Test electrode-react-webapp", () => {
           expect(res.statusCode).to.equal(200);
           expect(res.result).to.contain("<title>Electrode App</title>");
           expect(res.result).to.contain("<div>Hello Electrode</div>");
-          expect(res.result).to.contain("<script>console.log('Hello');</script>");
+          expect(res.result).to.contain('<link rel="dns-prefetch" href="https://cdn.com" />');
           stopServer(server);
         })
         .catch(err => {

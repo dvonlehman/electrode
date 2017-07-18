@@ -1,22 +1,56 @@
 "use strict";
+/* eslint-disable quotes */
 
-const fs = require("fs");
+const _ = require("lodash");
 const Path = require("path");
+const builtInTokens = require("../../lib/built-in-tokens");
 const reactWebapp = require("../../lib/react-webapp");
 
 describe("react-webapp", function() {
   describe("resolveContent", function() {
-    it("should require module with relative path", () => {
-      const f = "./test/data/foo.js";
-      expect(reactWebapp.resolveContent({ module: f })).to.equal("hello");
+    it("should require content module with relative path", () => {
+      return reactWebapp
+        .setupOptions()
+        .then(registerOptions => {
+          const routeOptions = _.defaults(
+            { htmlFile: "./test/data/index-1.html" },
+            registerOptions
+          );
+          const userContent = { module: "./test/data/foo" };
+          const handler = reactWebapp.makeRouteHandler(routeOptions, userContent);
+          return handler({});
+        })
+        .then(html => {
+          expect(html).to.contain(`<div class="js-content">hello</div>`);
+        });
     });
 
-    it("should require module", () => {
-      let mod;
-      const fooRequire = x => (mod = x);
-      const f = "test";
-      expect(reactWebapp.resolveContent({ module: f }, fooRequire)).to.equal(f);
-      expect(mod).to.equal(f);
+    it("should invoke content function", () => {
+      return reactWebapp
+        .setupOptions()
+        .then(registerOptions => {
+          const routeOptions = _.defaults({}, registerOptions);
+          const userContent = () => Promise.resolve({ html: "Content from a promise" });
+          const handler = reactWebapp.makeRouteHandler(routeOptions, userContent);
+          return handler({});
+        })
+        .then(html => {
+          expect(html).to.contain(`<div class="js-content">Content from a promise</div>`);
+        });
+    });
+
+    it("should use literal content string", () => {
+      return reactWebapp
+        .setupOptions()
+        .then(registerOptions => {
+          const routeOptions = _.defaults({}, registerOptions);
+          const userContent = "Static content";
+          const handler = reactWebapp.makeRouteHandler(routeOptions, userContent);
+          return handler({});
+        })
+        .then(html => {
+          expect(html).to.contain(`<div class="js-content">Static content</div>`);
+        });
     });
   });
 
@@ -28,70 +62,69 @@ describe("react-webapp", function() {
     });
   });
 
-  describe("makeRouteHandler", function() {
-    it("should invoke replaceToken for built-in tokens", () => {
-      const ssrContent = "hey this is the content";
-      const testTitle = "Test Electrode Web Application";
-      const customMeta = `<meta name="x-custom" value="foo"/>`;
+  describe("built-in tokens", () => {
+    it("replaces tokens", () => {
+      return reactWebapp
+        .setupOptions({
+          pageTitle: "new page title",
+          iconStats: "./test/data/icon-stats-test-pwa.json",
+          criticalCSS: "./test/data/critical.css",
+          stats: "./test/data/stats-test-one-bundle.json"
+        })
+        .then(registerOptions => {
+          const routeOptions = _.defaults({}, registerOptions);
+          const handler = reactWebapp.makeRouteHandler(routeOptions);
+          return handler({});
+        })
+        .then(html => {
+          expect(html).to.contain(`<style>body {color: green;}\n</style>`);
+          expect(html).to.contain('<meta name="mobile-web-app-capable" content="yes">');
+          expect(html).to.contain("<title>new page title</title>");
+          expect(html).to.contain(
+            '<link rel="stylesheet" href="/js/style.f07a873ce87fc904a6a5.css" />'
+          );
+          expect(html).to.contain('<script src="/js/bundle.f07a873ce87fc904a6a5.js"></script>');
+        });
+    });
 
-      const replaceToken = (token, context, getDefault) => {
-        switch (token) {
-          case "SSR_CONTENT":
-            return ssrContent;
-          case "PAGE_TITLE":
-            return Promise.resolve(`<title>${testTitle}</title>`);
-          case "META_TAGS":
-            // It's also possible to utilize the defaultValue in the replacement value
-            return getDefault().then(value => `${value}${customMeta}`);
-          default:
-            return getDefault();
-        }
-      };
+    it("should allow overridding a built-in token", () => {
+      const ssrContent = "hey this is the content";
 
       return reactWebapp
         .setupOptions({
-          pageTitle: "should get overidden",
-          iconStats: "./test/data/icon-stats-test-pwa.json",
-          criticalCSS: "./test/data/critical.css"
+          tokenReplacers: {
+            [builtInTokens.SSR_CONTENT]: () => Promise.resolve(ssrContent)
+          }
         })
-        .then(options => {
-          const handler = reactWebapp.makeRouteHandler(
-            Object.assign(options, {
-              htmlFile: "./test/data/index-1.html",
-              replaceToken
-            })
-          );
-
+        .then(registerOptions => {
+          const routeOptions = _.defaults({}, registerOptions);
+          const handler = reactWebapp.makeRouteHandler(routeOptions);
           return handler({});
         })
         .then(html => {
           expect(html).to.contain(`<div class="js-content">${ssrContent}</div>`);
-
-          expect(html).to.contain(`<title>${testTitle}</title>`);
-          expect(html).to.contain(`<meta charset="UTF-8">`);
-          // The custom meta tag should have been appended to the ones from the iconStats file
-          expect(html).to.contain(`<link rel="icon" href="/js/favicon-32x32.png">${customMeta}`);
-          expect(html).to.contain(
-            `<style>${fs.readFileSync(Path.resolve("./test/data/critical.css"))}</style>`
-          );
         });
     });
 
-    it("should replace custom tokens", () => {
+    it("should replace a custom token", () => {
       return reactWebapp
-        .setupOptions()
-        .then(options => {
-          const handler = reactWebapp.makeRouteHandler(
-            Object.assign(options, {
-              htmlFile: "./test/data/custom-tokens.html"
-            })
-          );
-
+        .setupOptions({
+          htmlFile: Path.resolve("./test/data/custom-tokens.html"),
+          tokenReplacers: {
+            CUSTOM_TOKEN: () => {
+              return Promise.resolve("custom token!");
+            }
+          }
+        })
+        .then(registerOptions => {
+          const routeOptions = _.defaults({}, registerOptions);
+          const handler = reactWebapp.makeRouteHandler(routeOptions);
           return handler({});
         })
         .then(html => {
-          expect(html).to.contain(`<div class="custom-1">custom replacement string</div>`);
-          expect(html).to.contain(`<div class="custom-2">custom replacement with promise</div>`);
+          expect(html).to.contain("custom token!");
+          expect(html).to.contain('<div class="custom-1">custom replacement string</div>');
+          expect(html).to.contain('<div class="custom-2">custom replacement with promise</div>');
         });
     });
   });

@@ -17,7 +17,7 @@ const registerRoutes = (server, options, next) => {
               v.content !== undefined,
               `You must define content for the webapp plugin path ${path}`
             );
-            return ReactWebapp.resolveContent(v.content);
+            return v.content;
           }
           return "";
         };

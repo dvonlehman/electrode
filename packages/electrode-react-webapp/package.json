@@ -55,6 +55,7 @@
     "babel-preset-stage-0": "^6.0.15",
     "electrode-archetype-njs-module-dev": "^2.1.0",
     "electrode-server": "^1.0.1",
+    "eslint-config-prettier": "^2.3.0",
     "object-assign": "^4.1.0",
     "prettier": "^1.5.2",
     "superagent": "^1.6.1",

@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {{PREFETCH}}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{MANIFEST}}
     {{META_TAGS}}
     {{PAGE_TITLE}}
     {{CRITICAL_CSS}}
-    {{PREFETCH_BUNDLES}}
-    {{WEBAPP_HEADER_BUNDLES}}
+    {{HEAD_LINKS}}
+    {{CSS_BUNDLES}}
+    {{HEAD_SCRIPTS}}
 </head>
 <body>
 <div class="js-content">{{SSR_CONTENT}}</div>
-{{WEBAPP_BODY_BUNDLES}}
+{{JS_BUNDLES}}
 <script>if (window.webappStart) webappStart();</script>
 <noscript>
   <h4>JavaScript is Disabled</h4>

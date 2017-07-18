@@ -112,6 +112,21 @@ function stripTokenDelimiters(token) {
   return _.trimEnd(_.trimStart(token, ["{", "~"]), ["}"]);
 }
 
+function htmlifyScripts(scripts) {
+  return scripts
+    .map(
+      x =>
+        typeof x === "string"
+          ? `<script>${x}</script>\n`
+          : x.map(n => `<script src="${n.src}"></script>`).join("\n")
+    )
+    .join("\n");
+}
+
+function makeCssLink(url) {
+  return `<link rel="stylesheet" href="${url}" />`;
+}
+
 function isPromise(obj) {
   return (
     !!obj &&
@@ -126,6 +141,8 @@ module.exports = {
   getIconStats,
   getCriticalCSS,
   getStatsPath,
+  htmlifyScripts,
+  makeCssLink,
   stripTokenDelimiters,
   isPromise
 };
