@@ -55,7 +55,11 @@ function makeRouteHandler(routeOptions, userContent) {
         const bareToken = utils.stripTokenDelimiters(token);
         const tokenReplacer = tokenReplacers[bareToken];
         if (tokenReplacer) {
-          return tokenReplacer(renderContext).then(value => value || "");
+          const replaceResult = tokenReplacer(renderContext);
+          if (utils.isPromise(replaceResult)) {
+            return replaceResult.then(value => value || "");
+          }
+          return Promise.resolve(replaceResult || "");
         }
 
         // If there is no tokenReplacer just replace with an empty string

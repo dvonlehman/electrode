@@ -34,7 +34,7 @@ const makeCssBundles = context => {
     bundleUrl = (cssChunk && `${routeOptions.prodBundleBase}${cssChunk.name}`) || "";
   }
 
-  return Promise.resolve(bundleUrl ? utils.makeCssLink(bundleUrl) : "");
+  return bundleUrl ? utils.makeCssLink(bundleUrl) : "";
 };
 
 const makeJsBundles = context => {
@@ -65,7 +65,7 @@ const makeJsBundles = context => {
 
   const htmlScripts = utils.htmlifyScripts(groupScripts(ins).scripts);
 
-  return Promise.resolve(htmlScripts);
+  return htmlScripts;
 };
 
 const makeCriticalCss = context => {
@@ -79,7 +79,7 @@ const makeManifestLink = context => {
   const routeOptions = context.routeOptions;
   const assets = routeOptions.__internals.assets;
   if (!assets.manifest) {
-    return Promise.resolve("");
+    return "";
   }
 
   let manifest;
@@ -91,14 +91,12 @@ const makeManifestLink = context => {
     manifest = `${prodBundleBase}${assets.manifest}`;
   }
 
-  return Promise.resolve(`<link rel="manifest" href="${manifest}" />\n`);
+  return `<link rel="manifest" href="${manifest}" />\n`;
 };
 
 const makeHeadScripts = context => {
   const routeOptions = context.routeOptions;
-  return Promise.resolve(
-    utils.htmlifyScripts(groupScripts(routeOptions.unbundledJS.enterHead).scripts)
-  );
+  return utils.htmlifyScripts(groupScripts(routeOptions.unbundledJS.enterHead).scripts);
 };
 
 const makeMetaTags = context => {
@@ -107,11 +105,11 @@ const makeMetaTags = context => {
 };
 
 const makePageTitle = context => {
-  return Promise.resolve(`<title>${context.routeOptions.pageTitle}</title>`);
+  return `<title>${context.routeOptions.pageTitle}</title>`;
 };
 
 const makePrefetchTags = context => {
-  return Promise.resolve(context.content.prefetch || "");
+  return context.content.prefetch || "";
 };
 
 module.exports = tokens;
