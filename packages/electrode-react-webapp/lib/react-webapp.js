@@ -9,8 +9,6 @@ const processCustomToken = require("./custom-tokens");
 const builtInTokens = require("./built-in-tokens");
 
 const TOKEN_REGEX = /{{[A-Z_~\.\/-]*}}/gi;
-const HTTP_ERROR_500 = 500;
-
 const utils = require("./utils");
 
 const resolveChunkSelector = utils.resolveChunkSelector;
@@ -89,12 +87,7 @@ function makeRouteHandler(routeOptions, userContent) {
       return Promise.resolve({ html: "" });
     };
 
-    return resolveContent(renderSs ? userContent : "").then(renderPage).catch(err => {
-      return Promise.reject({
-        status: err.status || HTTP_ERROR_500,
-        html: err.message || err.toString()
-      });
-    });
+    return resolveContent(renderSs ? userContent : "").then(renderPage);
   };
 }
 
